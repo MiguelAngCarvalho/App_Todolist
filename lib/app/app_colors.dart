@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Cores principais
-  static const Color primaryColor = Color.fromRGBO(184, 138, 106, 1);
-  static const Color secondaryColor = Color.fromRGBO(75, 53, 40, 1);
+  static const Color primaryColor = Color.fromRGBO(75, 53, 40, 1);
+  static const Color secondaryColor = Color.fromRGBO(184, 138, 106, 1);
 
   // Cores de fundo
   static const Color backgroundColor = Color.fromRGBO(245, 236, 191, 1);
@@ -14,5 +14,4 @@ class AppColors {
 
   // Outras cores
   static const Color accentColor = Color.fromRGBO(184, 138, 106, 1);
-  static const Color errorColor = Color.fromRGBO(75, 53, 40, 1);
 }

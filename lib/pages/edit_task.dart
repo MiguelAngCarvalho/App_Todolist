@@ -32,6 +32,8 @@ class _EditTaskState extends State<EditTask> {
     'Estudos'
   ];
 
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   @override
   void initState() {
     super.initState();
@@ -65,20 +67,50 @@ class _EditTaskState extends State<EditTask> {
   }
 
   void _saveTask() {
-    String task = _taskController.text;
-    String description = _descriptionController.text;
-    String formattedDate = _selectedDate != null
-        ? DateFormat('dd/MM/yyyy').format(_selectedDate!)
-        : 'Sem data';
+    if (_formKey.currentState?.validate() ?? false) {
+      String task = _taskController.text;
+      String description = _descriptionController.text;
+      String formattedDate = _selectedDate != null
+          ? DateFormat('dd/MM/yyyy').format(_selectedDate!)
+          : 'Sem data';
 
-    Navigator.pop(
-      context,
-      {
-        'task': task,
-        'description': description,
-        'date': formattedDate,
-        'list': _selectedList,
-      },
+      Navigator.pop(
+        context,
+        {
+          'task': task,
+          'description': description,
+          'date': formattedDate,
+          'list': _selectedList,
+        },
+      );
+    }
+  }
+
+  Widget _buildTextFormField({
+    required TextEditingController controller,
+    required String labelText,
+    required String? Function(String?) validator,
+    required IconData icon,
+    bool readOnly = false,
+    Function()? onTap,
+  }) {
+    return TextFormField(
+      controller: controller,
+      readOnly: readOnly,
+      onTap: onTap,
+      cursorColor: Theme.of(context).iconTheme.color,
+      decoration: InputDecoration(
+        labelStyle: Theme.of(context).textTheme.titleMedium,
+        labelText: labelText,
+        suffixIcon: Icon(icon, color: Theme.of(context).iconTheme.color),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Theme.of(context).iconTheme.color!),
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Theme.of(context).iconTheme.color!),
+        ),
+      ),
+      validator: validator,
     );
   }
 
@@ -93,63 +125,89 @@ class _EditTaskState extends State<EditTask> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              cursorColor: Theme.of(context).iconTheme.color,
-              controller: _taskController,
-              decoration: InputDecoration(
-                labelStyle: Theme.of(context).textTheme.titleMedium,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTextFormField(
+                controller: _taskController,
                 labelText: 'O que deve ser feito?',
-                suffixIcon:
-                    Icon(Icons.check, color: Theme.of(context).iconTheme.color),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'O título da tarefa é obrigatório.';
+                  }
+                  return null;
+                },
+                icon: Icons.check,
               ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              cursorColor: Theme.of(context).iconTheme.color,
-              controller: _descriptionController,
-              decoration: InputDecoration(
-                labelStyle: Theme.of(context).textTheme.titleMedium,
+              const SizedBox(height: 20),
+              _buildTextFormField(
+                controller: _descriptionController,
                 labelText: 'Descrição',
-                suffixIcon: Icon(Icons.description,
-                    color: Theme.of(context).iconTheme.color),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'A descrição é obrigatória.';
+                  }
+                  return null;
+                },
+                icon: Icons.description,
               ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              readOnly: true,
-              onTap: () => _selectDate(context),
-              decoration: InputDecoration(
-                labelStyle: Theme.of(context).textTheme.titleMedium,
+              const SizedBox(height: 20),
+              _buildTextFormField(
+                controller: TextEditingController(
+                  text: _selectedDate != null
+                      ? DateFormat('dd/MM/yyyy').format(_selectedDate!)
+                      : '',
+                ),
                 labelText: 'Data da Tarefa',
-                suffixIcon: Icon(Icons.calendar_today,
-                    color: Theme.of(context).iconTheme.color),
+                readOnly: true,
+                onTap: () => _selectDate(context),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'A data é obrigatória.';
+                  }
+                  return null;
+                },
+                icon: Icons.calendar_today,
               ),
-              controller: TextEditingController(
-                text: _selectedDate != null
-                    ? DateFormat('dd/MM/yyyy').format(_selectedDate!)
-                    : '',
+              const SizedBox(height: 20),
+              Text(
+                'Adicionar à lista:',
+                style: Theme.of(context).textTheme.titleMedium,
               ),
-            ),
-            const SizedBox(height: 20),
-            DropdownButton<String>(
-              value: _selectedList,
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedList = newValue!;
-                });
-              },
-              items:
-                  _availableLists.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            ),
-          ],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  DropdownButton<String>(
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    value: _selectedList,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedList = newValue!;
+                      });
+                    },
+                    items: _availableLists
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                  Icon(
+                    Icons.list,
+                    size: 30,
+                    color: Theme.of(context).iconTheme.color,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(

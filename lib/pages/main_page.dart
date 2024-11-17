@@ -17,9 +17,33 @@ class _HomePageState extends State<HomePage> {
 
   // Função para excluir uma tarefa
   void _deleteTask(int index) {
-    setState(() {
-      tasks.removeAt(index); // Remove a tarefa da lista
-    });
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmar Exclusão'),
+          content: const Text('Tem certeza que deseja excluir esta tarefa?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Fecha o diálogo
+              },
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () {
+                setState(() {
+                  tasks.removeAt(index); // Remove a tarefa
+                });
+                Navigator.pop(context); // Fecha o diálogo
+              },
+              child: const Text('Excluir'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   // Função para filtrar as tarefas pela categoria

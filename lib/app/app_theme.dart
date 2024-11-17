@@ -23,11 +23,11 @@ abstract class AppTheme {
           color: AppColors.textPrimary,
         ),
 
-        //Textos Widget add_task
+        //Textos Widget add_tck
         titleMedium: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
-          color: AppColors.secondaryColor,
+          color: AppColors.textPrimary,
         ),
         titleSmall: TextStyle(fontSize: 14, color: AppColors.textPrimary),
       ),
@@ -49,7 +49,7 @@ abstract class AppTheme {
 
       // Definir o tema de ícones
       iconTheme:
-          const IconThemeData(color: AppColors.textPrimary), // Cor dos ícones
+          const IconThemeData(color: AppColors.primaryColor), // Cor dos ícones
 
       // Definir a cor do fundo da tela (Scaffold)
       scaffoldBackgroundColor:

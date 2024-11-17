@@ -30,6 +30,7 @@ class _AddTaskState extends State<AddTask> {
     required TextEditingController controller,
     required String labelText,
     required String? Function(String?) validator,
+    required IconData icon, // Novo parâmetro para o ícone
     bool readOnly = false,
     Function()? onTap,
   }) {
@@ -41,7 +42,7 @@ class _AddTaskState extends State<AddTask> {
       decoration: InputDecoration(
         labelStyle: Theme.of(context).textTheme.titleMedium,
         labelText: labelText,
-        suffixIcon: Icon(Icons.check, color: Theme.of(context).iconTheme.color),
+        suffixIcon: Icon(icon, color: Theme.of(context).iconTheme.color),
         enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: Theme.of(context).iconTheme.color!),
         ),
@@ -115,6 +116,7 @@ class _AddTaskState extends State<AddTask> {
                   }
                   return null;
                 },
+                icon: Icons.check, // Ícone igual ao do EditTask
               ),
               const SizedBox(height: 20),
 
@@ -128,6 +130,7 @@ class _AddTaskState extends State<AddTask> {
                   }
                   return null;
                 },
+                icon: Icons.description, // Ícone para a descrição
               ),
               const SizedBox(height: 20),
 
@@ -147,11 +150,12 @@ class _AddTaskState extends State<AddTask> {
                   }
                   return null;
                 },
+                icon: Icons.calendar_today, // Ícone para a data
               ),
               const SizedBox(height: 20),
 
               Text(
-                'Adicionar à lista',
+                'Adicionar à lista:',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               Row(
@@ -161,7 +165,7 @@ class _AddTaskState extends State<AddTask> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.secondary,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                     value: _selectedList,
                     onChanged: (String? newValue) {
