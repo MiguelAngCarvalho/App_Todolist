@@ -15,12 +15,12 @@ class AppToDoList extends StatelessWidget {
       title: 'Todo List',
       theme: AppTheme.light(),
 
-      initialRoute: AppRoutes.homePage, // Rota inicial para a página inicial
+      initialRoute: AppRoutes.homePage,
       routes: {
         AppRoutes.homePage: (context) =>
-            const HomePage(), // Definindo a rota para HomePage
+            const HomePage(), 
         AppRoutes.addTask: (context) =>
-            const AddTask(), // Definindo a rota para AddTask
+            const AddTask(), 
       },
     );
   }

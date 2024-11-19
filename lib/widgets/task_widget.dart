@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
-/// Widget para exibir uma tarefa com um checklist.
 class TaskWidget extends StatefulWidget {
   final String task;
   final String description;
   final String date;
   final String list;
-  final VoidCallback onDelete; // Função para excluir a tarefa
-  final VoidCallback onEdit; // Função para editar a tarefa
+  final VoidCallback onDelete; 
+  final VoidCallback onEdit; 
 
   const TaskWidget({
     Key? key,
@@ -15,8 +14,8 @@ class TaskWidget extends StatefulWidget {
     required this.description,
     required this.date,
     required this.list,
-    required this.onDelete, // Adiciona o parâmetro para a função de excluir
-    required this.onEdit, // Adiciona o parâmetro para a função de editar
+    required this.onDelete, 
+    required this.onEdit, 
   }) : super(key: key);
 
   @override
@@ -24,7 +23,7 @@ class TaskWidget extends StatefulWidget {
 }
 
 class _TaskWidgetState extends State<TaskWidget> {
-  bool _isChecked = false; // Estado para o checkbox
+  bool _isChecked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -70,16 +69,16 @@ class _TaskWidgetState extends State<TaskWidget> {
             IconButton(
               icon: Icon(
                 Icons.edit,
-                color: Theme.of(context).iconTheme.color, // Cor do ícone de editar
+                color: Theme.of(context).iconTheme.color,
               ),
-              onPressed: widget.onEdit, // Chama a função de editar
+              onPressed: widget.onEdit, 
             ),
             IconButton(
               icon: Icon(
                 Icons.delete,
-                color: Theme.of(context).iconTheme.color, // Cor do ícone de excluir
+                color: Theme.of(context).iconTheme.color, 
               ),
-              onPressed: widget.onDelete, // Chama a função de exclusão
+              onPressed: widget.onDelete, 
             ),
           ],
         ),

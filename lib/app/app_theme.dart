@@ -5,25 +5,19 @@ abstract class AppTheme {
   static ThemeData light() {
     return ThemeData(
       useMaterial3: true,
-
       colorScheme: const ColorScheme.light(
         primary: AppColors.primaryColor,
         secondary: AppColors.secondaryColor,
       ),
-
-      // Estilos de texto
       textTheme: const TextTheme(
-        bodyLarge: TextStyle(color: AppColors.textPrimary), // Texto primário
-        bodyMedium:
-            TextStyle(color: AppColors.textSecondary), // Texto secundário
+        bodyLarge: TextStyle(color: AppColors.textPrimary),
+        bodyMedium: TextStyle(color: AppColors.textSecondary),
         titleLarge: TextStyle(
           fontSize: 20.0,
-          fontFamily: 'RobotoCondensed', // Fonte personalizada
+          fontFamily: 'RobotoCondensed',
           fontWeight: FontWeight.bold,
           color: AppColors.textPrimary,
         ),
-
-        //Textos Widget add_tck
         titleMedium: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
@@ -31,29 +25,18 @@ abstract class AppTheme {
         ),
         titleSmall: TextStyle(fontSize: 14, color: AppColors.textPrimary),
       ),
-
-      // Estilo do AppBar
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.accentColor, // Cor do AppBar
+        backgroundColor: AppColors.accentColor,
         titleTextStyle: TextStyle(
-          color: AppColors.textPrimary, // Cor do título do AppBar
+          color: AppColors.textPrimary,
           fontSize: 20.0,
         ),
       ),
-
-      // Estilo do FloatingActionButton
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor:
-            AppColors.accentColor, // Cor de fundo do botão flutuante
+        backgroundColor: AppColors.accentColor,
       ),
-
-      // Definir o tema de ícones
-      iconTheme:
-          const IconThemeData(color: AppColors.primaryColor), // Cor dos ícones
-
-      // Definir a cor do fundo da tela (Scaffold)
-      scaffoldBackgroundColor:
-          AppColors.backgroundColor, // Cor de fundo do Scaffold
+      iconTheme: const IconThemeData(color: AppColors.primaryColor),
+      scaffoldBackgroundColor: AppColors.backgroundColor,
     );
   }
 }

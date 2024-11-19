@@ -1,8 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart'; 
 import 'package:flutter/material.dart';
 import 'package:app_todolist/widgets/task_widget.dart';
-import 'package:app_todolist/pages/add_task_page.dart'; // Importando a página de adicionar tarefa
-import 'package:app_todolist/pages/edit_task.dart'; // Importando a página de editar tarefa
-import 'package:intl/intl.dart'; // Importando a biblioteca intl
+import 'package:app_todolist/pages/add_task_page.dart'; 
+import 'package:app_todolist/pages/edit_task.dart';
+import 'package:intl/intl.dart'; 
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,11 +13,46 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Map<String, String>> tasks = [];
-  String _selectedCategory = 'Todos'; // Filtro para a categoria
+  List<Map<String, String>> tasks = []; 
+  String _selectedCategory = 'Todos';
 
-  // Função para excluir uma tarefa
+  @override
+  void initState() {
+    super.initState();
+    _loadTasksFromFirebase(); 
+  }
+
+  Future<void> _loadTasksFromFirebase() async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      QuerySnapshot snapshot = await firestore.collection('tasks').get();
+
+      setState(() {
+        tasks = snapshot.docs.map((doc) {
+          return {
+            'task': doc['task'] as String,
+            'description': doc['description'] as String,
+            'date': doc['date'] as String,
+            'list': doc['list'] as String,
+          };
+        }).toList();
+      });
+    } catch (e) {
+      print("Erro ao carregar tarefas do Firebase: $e");
+    }
+  }
+
+  Future<void> _deleteTaskFromFirebase(String taskId) async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      await firestore.collection('tasks').doc(taskId).delete();
+    } catch (e) {
+      print("Erro ao excluir tarefa do Firebase: $e");
+    }
+  }
+
   void _deleteTask(int index) {
+    String taskId = tasks[index]['taskId']!; 
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -26,17 +62,18 @@ class _HomePageState extends State<HomePage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Fecha o diálogo
+                Navigator.pop(context); 
               },
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              onPressed: () {
+              onPressed: () async {
+                await _deleteTaskFromFirebase(taskId); 
                 setState(() {
-                  tasks.removeAt(index); // Remove a tarefa
+                  tasks.removeAt(index); 
                 });
-                Navigator.pop(context); // Fecha o diálogo
+                Navigator.pop(context); 
               },
               child: const Text('Excluir'),
             ),
@@ -46,50 +83,62 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Função para filtrar as tarefas pela categoria
   List<Map<String, String>> _filterTasks() {
     if (_selectedCategory == 'Todos') {
-      return tasks; // Se a categoria for "Todos", retorna todas as tarefas
+      return tasks; 
     }
     return tasks
         .where((task) => task['list'] == _selectedCategory)
-        .toList(); // Filtra pelas tarefas da categoria selecionada
+        .toList(); 
   }
 
-  // Função para ordenar as tarefas por data
   List<Map<String, String>> _sortTasksByDate(
       List<Map<String, String>> taskList) {
     final DateFormat dateFormat =
-        DateFormat("dd/MM/yy"); // Definindo o formato da data
+        DateFormat("dd/MM/yy"); 
 
     taskList.sort((a, b) {
       DateTime dateA =
-          dateFormat.parse(a['date']!); // Converte a data para DateTime
+          dateFormat.parse(a['date']!); 
       DateTime dateB =
-          dateFormat.parse(b['date']!); // Converte a data para DateTime
-      return dateA.compareTo(dateB); // Ordena as tarefas pela data
+          dateFormat.parse(b['date']!); 
+      return dateA.compareTo(dateB); 
     });
 
     return taskList;
   }
 
-  // Navegar para a tela de adicionar tarefa
   void _navigateToAddTask(BuildContext context) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const AddTask(), // Chamando a página de adicionar
+        builder: (context) => const AddTask(), 
       ),
     );
 
     if (result != null && result is Map<String, String>) {
+      await _addTaskToFirebase(result);
+
       setState(() {
-        tasks.add(Map<String, String>.from(result)); // Adiciona nova tarefa
+        tasks.add(Map<String, String>.from(result)); 
       });
     }
   }
 
-  // Navegar para a tela de editar tarefa
+  Future<void> _addTaskToFirebase(Map<String, String> task) async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      await firestore.collection('tasks').add({
+        'task': task['task'],
+        'description': task['description'],
+        'date': task['date'],
+        'list': task['list']
+      });
+    } catch (e) {
+      print("Erro ao adicionar tarefa no Firebase: $e");
+    }
+  }
+
   void _navigateToEditTask(
       BuildContext context, Map<String, String> task, int index) async {
     final result = await Navigator.push(
@@ -100,20 +149,36 @@ class _HomePageState extends State<HomePage> {
           description: task['description']!,
           date: task['date']!,
           list: task['list']!,
-        ), // Chamando a página de edição
+        ), 
       ),
     );
 
     if (result != null && result is Map<String, String>) {
+      await _updateTaskInFirebase(task['taskId']!, result);
+
       setState(() {
-        tasks[index] = Map<String, String>.from(result); // Atualiza a tarefa
+        tasks[index] = Map<String, String>.from(result); 
       });
+    }
+  }
+
+  Future<void> _updateTaskInFirebase(
+      String taskId, Map<String, String> task) async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      await firestore.collection('tasks').doc(taskId).update({
+        'task': task['task'],
+        'description': task['description'],
+        'date': task['date'],
+        'list': task['list']
+      });
+    } catch (e) {
+      print("Erro ao atualizar tarefa no Firebase: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Filtra as tarefas conforme a categoria e ordena pela data
     List<Map<String, String>> filteredTasks = _filterTasks();
     List<Map<String, String>> sortedTasks = _sortTasksByDate(filteredTasks);
 
@@ -124,7 +189,6 @@ class _HomePageState extends State<HomePage> {
         actionsIconTheme: Theme.of(context).iconTheme,
         title: const Text('Página Principal'),
         centerTitle: true,
-        // Filtro no AppBar
         actions: [
           PopupMenuButton<String>(
             onSelected: (String selectedCategory) {

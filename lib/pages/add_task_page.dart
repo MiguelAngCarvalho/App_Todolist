@@ -1,5 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+class Task {
+  final String task;
+  final String description;
+  final String date;
+  final String list;
+
+  Task({
+    required this.task,
+    required this.description,
+    required this.date,
+    required this.list,
+  });
+
+  Map<String, String> json() {
+    return {
+      'task': task,
+      'description': description,
+      'date': date,
+      'list': list,
+    };
+  }
+}
 
 class AddTask extends StatefulWidget {
   const AddTask({super.key});
@@ -18,19 +43,16 @@ class _AddTaskState extends State<AddTask> {
     'Estudos'
   ];
 
-  // Controladores dos campos de entrada
   final TextEditingController _taskController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
-  // Chave global do formulário
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  // Função reutilizável para TextFormField
   Widget _buildTextFormField({
     required TextEditingController controller,
     required String labelText,
     required String? Function(String?) validator,
-    required IconData icon, // Novo parâmetro para o ícone
+    required IconData icon,
     bool readOnly = false,
     Function()? onTap,
   }) {
@@ -54,7 +76,6 @@ class _AddTaskState extends State<AddTask> {
     );
   }
 
-  // Método para exibir o DatePicker
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -69,24 +90,51 @@ class _AddTaskState extends State<AddTask> {
     }
   }
 
-  // Função para salvar a tarefa e enviar para a HomePage
-  void _saveTask() {
+  void _saveTask() async {
     if (_formKey.currentState?.validate() ?? false) {
-      String task = _taskController.text;
+      String taskTitle = _taskController.text;
       String description = _descriptionController.text;
       String formattedDate = _selectedDate != null
           ? DateFormat('dd/MM/yyyy').format(_selectedDate!)
           : 'Sem data';
 
-      Navigator.pop(
-        context,
-        {
-          'task': task,
-          'description': description,
-          'date': formattedDate,
-          'list': _selectedList,
-        } as Map<String, String>,
+      Task task = Task(
+        task: taskTitle,
+        description: description,
+        date: formattedDate,
+        list: _selectedList,
       );
+
+      try {
+        const url =
+            'https://todoapplist-fea55-default-rtdb.firebaseio.com/task.json';
+        final response = await http.post(
+          Uri.parse(url),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode(task.json()),
+        );
+
+        if (response.statusCode == 200) {
+          if (mounted) {
+            Navigator.pop(context, task.json());
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content:
+                    Text('Erro ao salvar a tarefa: ${response.statusCode}'),
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro ao salvar a tarefa: $e')),
+          );
+        }
+      }
     }
   }
 
@@ -102,11 +150,10 @@ class _AddTaskState extends State<AddTask> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          key: _formKey, // Atribuindo a chave ao formulário
+          key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Campo de texto "O que deve ser feito?"
               _buildTextFormField(
                 controller: _taskController,
                 labelText: 'O que deve ser feito?',
@@ -116,11 +163,9 @@ class _AddTaskState extends State<AddTask> {
                   }
                   return null;
                 },
-                icon: Icons.check, // Ícone igual ao do EditTask
+                icon: Icons.check,
               ),
               const SizedBox(height: 20),
-
-              // Campo de texto para "Descrição"
               _buildTextFormField(
                 controller: _descriptionController,
                 labelText: 'Descrição',
@@ -130,11 +175,9 @@ class _AddTaskState extends State<AddTask> {
                   }
                   return null;
                 },
-                icon: Icons.description, // Ícone para a descrição
+                icon: Icons.description,
               ),
               const SizedBox(height: 20),
-
-              // Campo de seleção de data
               _buildTextFormField(
                 controller: TextEditingController(
                   text: _selectedDate != null
@@ -150,10 +193,9 @@ class _AddTaskState extends State<AddTask> {
                   }
                   return null;
                 },
-                icon: Icons.calendar_today, // Ícone para a data
+                icon: Icons.calendar_today,
               ),
               const SizedBox(height: 20),
-
               Text(
                 'Adicionar à lista:',
                 style: Theme.of(context).textTheme.titleMedium,
@@ -190,8 +232,7 @@ class _AddTaskState extends State<AddTask> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed:
-            _saveTask, // Salva a tarefa apenas se os campos forem válidos
+        onPressed: _saveTask,
         child: const Icon(Icons.check),
       ),
     );
